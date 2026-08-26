@@ -1,0 +1,30 @@
+# Pastas de build do .NET
+bin/
+obj/
+
+# Arquivos de usuário do Visual Studio
+*.user
+*.suo
+.vs/
+
+# Arquivos do Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Arquivos do VS Code (opcional manter, mas comum ignorar configs locais)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Arquivos de log e temporários
+*.log
+*.tmp
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de saída de publicação
+publish/
+*.pdb
