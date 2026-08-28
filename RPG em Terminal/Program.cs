@@ -2,6 +2,8 @@
 
 Random random = new Random();
 
+bool fugiuComSucesso = false;
+
 var heroi = new Heroi
 {
     Nome = "Davi",
@@ -49,6 +51,8 @@ while (heroi.EstaVivo() && inimigo.EstaVivo())
             continue;
     }
 
+    bool heroiDefendendo = false;
+
     if (acaoEscolhida == AcaoCombate.Atacar)
     {
         int dano = random.Next(heroi.Ataque - 3, heroi.Ataque + 4);
@@ -56,10 +60,32 @@ while (heroi.EstaVivo() && inimigo.EstaVivo())
 
         if (!inimigo.EstaVivo())
         {
-            Console.WriteLine($"{inimigo.Nome} foi derrotado!");
+            Console.WriteLine($"\n{inimigo.Nome} foi derrotado!");
             heroi.Experiencia += inimigo.RecompensaXP;
             Console.WriteLine($"{heroi.Nome} ganhou {inimigo.RecompensaXP} de experiência! (XP total: {heroi.Experiencia})");
             break;
+        }
+    }
+
+    if (acaoEscolhida == AcaoCombate.Defender)
+    {
+        Console.WriteLine($"\n{heroi.Nome} está se defendendo!");
+        heroi.Defesa += 5;
+        heroiDefendendo = true;
+    }
+
+    if (acaoEscolhida == AcaoCombate.Fugir)
+    {
+        Console.WriteLine($"\n{heroi.Nome} tentou fugir!");
+        if (random.Next(0, 2) == 0)
+        {
+            Console.WriteLine($"{heroi.Nome} conseguiu fugir com sucesso!");
+            fugiuComSucesso = true;
+            break;
+        }
+        else
+        {
+            Console.WriteLine($"{heroi.Nome} falhou ao tentar fugir!");
         }
     }
 
@@ -70,13 +96,23 @@ while (heroi.EstaVivo() && inimigo.EstaVivo())
 
         if (!heroi.EstaVivo())
         {
-            Console.WriteLine($"{heroi.Nome} foi derrotado!");
+            Console.WriteLine($"\n{heroi.Nome} foi derrotado!");
             break;
         }
     }
+
+    if (heroiDefendendo)
+    {
+        heroi.Defesa -= 5;
+    }
+
 }
 
-if (heroi.EstaVivo())
+if (fugiuComSucesso)
+{
+    Console.WriteLine($"\n{heroi.Nome} escapou da batalha!");
+}
+else if (heroi.EstaVivo())
 {
     Console.WriteLine($"\n{heroi.Nome} venceu a batalha!");
 }
@@ -84,7 +120,6 @@ else
 {
     Console.WriteLine($"\n{inimigo.Nome} venceu a batalha!");
 }
-
 public abstract class Personagem
 {
     public string Nome { get; set; } = string.Empty;
