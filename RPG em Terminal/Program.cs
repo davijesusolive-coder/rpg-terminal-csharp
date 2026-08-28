@@ -61,7 +61,7 @@ while (heroi.EstaVivo() && inimigo.EstaVivo())
         if (!inimigo.EstaVivo())
         {
             Console.WriteLine($"\n{inimigo.Nome} foi derrotado!");
-            heroi.Experiencia += inimigo.RecompensaXP;
+            heroi.GanharExperiencia(inimigo.RecompensaXP);
             Console.WriteLine($"{heroi.Nome} ganhou {inimigo.RecompensaXP} de experiência! (XP total: {heroi.Experiencia})");
             break;
         }
@@ -140,6 +140,32 @@ public abstract class Personagem
 public class Heroi : Personagem
 {
     public int Experiencia { get; set; } = 0;
+    public int Nivel { get; set; } = 1;
+
+    public int ExeperienciaProximoNivel => Nivel * 100;
+
+    public void GanharExperiencia(int xp)
+    {
+        Experiencia += xp;
+        Console.WriteLine($"{Nome} ganhou {xp} de experiência! (XP total: {Experiencia})");
+        while (Experiencia >= ExeperienciaProximoNivel)
+        {
+            SubirDeNivel();
+        }
+    }
+
+    private void SubirDeNivel()
+    {
+        int xpNecessario = ExeperienciaProximoNivel;
+        Experiencia -= xpNecessario;
+        Nivel++;
+
+        Ataque += 3;
+        Defesa += 1;
+        PontosDeVida += 20;
+
+        Console.WriteLine($"{Nome} subiu para o nível {Nivel}!");
+    }
 }
 
 public class Inimigo : Personagem
