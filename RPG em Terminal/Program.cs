@@ -62,7 +62,6 @@ while (heroi.EstaVivo() && inimigo.EstaVivo())
         {
             Console.WriteLine($"\n{inimigo.Nome} foi derrotado!");
             heroi.GanharExperiencia(inimigo.RecompensaXP);
-            Console.WriteLine($"{heroi.Nome} ganhou {inimigo.RecompensaXP} de experiência! (XP total: {heroi.Experiencia})");
             break;
         }
     }
@@ -132,7 +131,7 @@ public abstract class Personagem
     public virtual void ReceberDano(int dano)
     {
         int danoReal = Math.Max(dano - Defesa, 0);
-        PontosDeVida -= danoReal;
+        PontosDeVida = Math.Max(PontosDeVida - danoReal, 0);
         Console.WriteLine($"{Nome} recebeu {danoReal} de dano! (HP restante: {PontosDeVida})");
     }
 }
@@ -142,21 +141,23 @@ public class Heroi : Personagem
     public int Experiencia { get; set; } = 0;
     public int Nivel { get; set; } = 1;
 
-    public int ExeperienciaProximoNivel => (int)(100 * Math.Pow(1.5, Nivel - 1));
+    public int ExperienciaProximoNivel => (int)(100 * Math.Pow(1.5, Nivel - 1));
 
     public void GanharExperiencia(int xp)
     {
         Experiencia += xp;
         Console.WriteLine($"{Nome} ganhou {xp} de experiência! (XP total: {Experiencia})");
-        while (Experiencia >= ExeperienciaProximoNivel)
+        while (Experiencia >= ExperienciaProximoNivel)
         {
             SubirDeNivel();
         }
+
+        Console.WriteLine($"XP: {Experiencia}/{ExperienciaProximoNivel}");
     }
 
     private void SubirDeNivel()
     {
-        int xpNecessario = ExeperienciaProximoNivel;
+        int xpNecessario = ExperienciaProximoNivel;
         Experiencia -= xpNecessario;
         Nivel++;
 
