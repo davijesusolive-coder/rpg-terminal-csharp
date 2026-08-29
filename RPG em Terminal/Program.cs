@@ -142,7 +142,7 @@ public class Heroi : Personagem
     public int Experiencia { get; set; } = 0;
     public int Nivel { get; set; } = 1;
 
-    public int ExeperienciaProximoNivel => Nivel * 100;
+    public int ExeperienciaProximoNivel => (int)(100 * Math.Pow(1.5, Nivel - 1));
 
     public void GanharExperiencia(int xp)
     {
