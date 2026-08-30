@@ -12,113 +12,128 @@ var heroi = new Heroi
     Defesa = 5
 };
 
-var inimigo = new Inimigo
+List<Inimigo> inimigos = new List<Inimigo>
 {
-    Nome = "Goblin",
-    PontosDeVida = 50,
-    Ataque = 10,
-    Defesa = 2,
-    RecompensaXP = 20
+    new Inimigo { Nome = "Goblin", PontosDeVida = 50, Ataque = 10, Defesa = 2, RecompensaXP = 20 },
+    new Inimigo { Nome = "Orc", PontosDeVida = 80, Ataque = 15, Defesa = 5, RecompensaXP = 40 },
+    new Inimigo { Nome = "Troll", PontosDeVida = 120, Ataque = 20, Defesa = 8, RecompensaXP = 60 },
+    new Inimigo { Nome = "Dragão", PontosDeVida = 200, Ataque = 30, Defesa = 15, RecompensaXP = 100 }
 };
 
-Console.WriteLine($"Um {inimigo.Nome} selvagem apareceu!");
-
-while (heroi.EstaVivo() && inimigo.EstaVivo())
+foreach (var inimigoAtual in inimigos)
 {
-    Console.WriteLine();
-    Console.WriteLine("O que você vai fazer?");
-    Console.WriteLine("1. Atacar");
-    Console.WriteLine("2. Defender");
-    Console.WriteLine("3. Fugir");
-    Console.Write("Escolha uma opção: ");
+    Console.WriteLine($"\nUm {inimigoAtual.Nome} apareceu! ({heroi.Nome} entra com {heroi.PontosDeVida} de vida)");
 
-    string? opcaoEscolhida = Console.ReadLine();
-    AcaoCombate acaoEscolhida;
+    ResultadoCombate resultado = Combater(heroi, inimigoAtual);
 
-    switch (opcaoEscolhida)
+    if (resultado == ResultadoCombate.Fuga)
     {
-        case "1":
-            acaoEscolhida = AcaoCombate.Atacar;
-            break;
-        case "2":
-            acaoEscolhida = AcaoCombate.Defender;
-            break;
-        case "3":
-            acaoEscolhida = AcaoCombate.Fugir;
-            break;
-        default:
-            Console.WriteLine("Opção Inválida!");
-            continue;
+        fugiuComSucesso = true;
+        break;
     }
-
-    bool heroiDefendendo = false;
-
-    if (acaoEscolhida == AcaoCombate.Atacar)
+    else if (resultado == ResultadoCombate.Derrota)
     {
-        int dano = random.Next(heroi.Ataque - 3, heroi.Ataque + 4);
-        inimigo.ReceberDano(dano);
-
-        if (!inimigo.EstaVivo())
-        {
-            Console.WriteLine($"\n{inimigo.Nome} foi derrotado!");
-            heroi.GanharExperiencia(inimigo.RecompensaXP);
-            break;
-        }
+        Console.WriteLine($"\n{heroi.Nome} foi derrotado! Fim de jogo.");
+        return;
     }
-
-    if (acaoEscolhida == AcaoCombate.Defender)
-    {
-        Console.WriteLine($"\n{heroi.Nome} está se defendendo!");
-        heroi.Defesa += 5;
-        heroiDefendendo = true;
-    }
-
-    if (acaoEscolhida == AcaoCombate.Fugir)
-    {
-        Console.WriteLine($"\n{heroi.Nome} tentou fugir!");
-        if (random.Next(0, 2) == 0)
-        {
-            Console.WriteLine($"{heroi.Nome} conseguiu fugir com sucesso!");
-            fugiuComSucesso = true;
-            break;
-        }
-        else
-        {
-            Console.WriteLine($"{heroi.Nome} falhou ao tentar fugir!");
-        }
-    }
-
-    if (inimigo.EstaVivo())
-    {
-        int danoInimigo = random.Next(inimigo.Ataque - 2, inimigo.Ataque + 3);
-        heroi.ReceberDano(danoInimigo);
-
-        if (!heroi.EstaVivo())
-        {
-            Console.WriteLine($"\n{heroi.Nome} foi derrotado!");
-            break;
-        }
-    }
-
-    if (heroiDefendendo)
-    {
-        heroi.Defesa -= 5;
-    }
-
 }
 
 if (fugiuComSucesso)
 {
-    Console.WriteLine($"\n{heroi.Nome} escapou da batalha!");
-}
-else if (heroi.EstaVivo())
-{
-    Console.WriteLine($"\n{heroi.Nome} venceu a batalha!");
+    Console.WriteLine($"\n{heroi.Nome} escapou da jornada!");
 }
 else
 {
-    Console.WriteLine($"\n{inimigo.Nome} venceu a batalha!");
+    Console.WriteLine($"\n{heroi.Nome} venceu todos os inimigos! Jornada finalizada!");
 }
+
+ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
+{
+    while (heroi.EstaVivo() && inimigo.EstaVivo())
+    {
+        Console.WriteLine();
+        Console.WriteLine("O que você vai fazer?");
+        Console.WriteLine("1. Atacar");
+        Console.WriteLine("2. Defender");
+        Console.WriteLine("3. Fugir");
+        Console.Write("Escolha uma opção: ");
+
+        string? opcaoEscolhida = Console.ReadLine();
+        AcaoCombate acaoEscolhida;
+
+        switch (opcaoEscolhida)
+        {
+            case "1":
+                acaoEscolhida = AcaoCombate.Atacar;
+                break;
+            case "2":
+                acaoEscolhida = AcaoCombate.Defender;
+                break;
+            case "3":
+                acaoEscolhida = AcaoCombate.Fugir;
+                break;
+            default:
+                Console.WriteLine("Opção Inválida!");
+                continue;
+        }
+
+        bool heroiDefendendo = false;
+
+        if (acaoEscolhida == AcaoCombate.Atacar)
+        {
+            int dano = random.Next(heroi.Ataque - 3, heroi.Ataque + 4);
+            inimigo.ReceberDano(dano);
+
+            if (!inimigo.EstaVivo())
+            {
+                Console.WriteLine($"\n{inimigo.Nome} foi derrotado!");
+                heroi.GanharExperiencia(inimigo.RecompensaXP);
+                return ResultadoCombate.Vitoria;
+            }
+        }
+
+        if (acaoEscolhida == AcaoCombate.Defender)
+        {
+            Console.WriteLine($"\n{heroi.Nome} está se defendendo!");
+            heroi.Defesa += 5;
+            heroiDefendendo = true;
+        }
+
+        if (acaoEscolhida == AcaoCombate.Fugir)
+        {
+            Console.WriteLine($"\n{heroi.Nome} tentou fugir!");
+            if (random.Next(0, 2) == 0)
+            {
+                Console.WriteLine($"{heroi.Nome} conseguiu fugir com sucesso!");
+                return ResultadoCombate.Fuga;
+            }
+            else
+            {
+                Console.WriteLine($"{heroi.Nome} falhou ao tentar fugir!");
+            }
+        }
+
+        if (inimigo.EstaVivo())
+        {
+            int danoInimigo = random.Next(inimigo.Ataque - 2, inimigo.Ataque + 3);
+            heroi.ReceberDano(danoInimigo);
+
+            if (!heroi.EstaVivo())
+            {
+                Console.WriteLine($"\n{heroi.Nome} foi derrotado!");
+                return ResultadoCombate.Derrota;
+            }
+        }
+
+        if (heroiDefendendo)
+        {
+            heroi.Defesa -= 5;
+        }
+    }
+
+    return heroi.EstaVivo() ? ResultadoCombate.Vitoria : ResultadoCombate.Derrota;
+}
+
 public abstract class Personagem
 {
     public string Nome { get; set; } = string.Empty;
@@ -179,4 +194,11 @@ enum AcaoCombate
     Atacar,
     Defender,
     Fugir
+}
+
+enum ResultadoCombate
+{
+    Vitoria,
+    Derrota,
+    Fuga
 }
