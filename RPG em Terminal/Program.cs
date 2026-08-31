@@ -9,7 +9,8 @@ var heroi = new Heroi
     Nome = "Davi",
     PontosDeVida = 100,
     Ataque = 15,
-    Defesa = 5
+    Defesa = 5,
+    Inventario = new List<Item> { new Pocao { Nome = "Poção Pequena", QuantidadeCura = 30} }
 };
 
 List<Inimigo> inimigos = new List<Inimigo>
@@ -56,6 +57,7 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
         Console.WriteLine("1. Atacar");
         Console.WriteLine("2. Defender");
         Console.WriteLine("3. Fugir");
+        Console.WriteLine("4. Inventário");
         Console.Write("Escolha uma opção: ");
 
         string? opcaoEscolhida = Console.ReadLine();
@@ -71,6 +73,9 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
                 break;
             case "3":
                 acaoEscolhida = AcaoCombate.Fugir;
+                break;
+            case "4":
+                acaoEscolhida = AcaoCombate.UsarItem;
                 break;
             default:
                 Console.WriteLine("Opção Inválida!");
@@ -113,6 +118,42 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
             }
         }
 
+        if (acaoEscolhida == AcaoCombate.UsarItem)
+        {
+            if (heroi.Inventario.Count == 0)
+            {
+                Console.WriteLine("Inventário vazio!");
+            }
+            else
+            {
+                Console.WriteLine("Itens disponíveis:");
+                for (int i = 0; i < heroi.Inventario.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {heroi.Inventario[i].Nome}");
+                }
+                Console.Write("Escolha um item para usar: ");
+                string? itemEscolhido = Console.ReadLine();
+                if (int.TryParse(itemEscolhido, out int indiceItem) && indiceItem > 0 && indiceItem <= heroi.Inventario.Count)
+                {
+                    Item item = heroi.Inventario[indiceItem - 1];
+                    if (item is Pocao pocao)
+                    {
+                        heroi.PontosDeVida = Math.Min(heroi.PontosDeVida + pocao.QuantidadeCura, heroi.PontosDeVidaMaximo);
+                        Console.WriteLine($"{heroi.Nome} usou {pocao.Nome} e recuperou {pocao.QuantidadeCura} de vida! (HP atual: {heroi.PontosDeVida})");
+                        heroi.Inventario.RemoveAt(indiceItem - 1);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Item não utilizável!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Opção inválida!");
+                }
+            }
+        }
+
         if (inimigo.EstaVivo())
         {
             int danoInimigo = random.Next(inimigo.Ataque - 2, inimigo.Ataque + 3);
@@ -138,6 +179,7 @@ public abstract class Personagem
 {
     public string Nome { get; set; } = string.Empty;
     public int PontosDeVida { get; set; }
+    public int PontosDeVidaMaximo { get; set;  }
     public int Ataque { get; set; }
     public int Defesa { get; set; }
 
@@ -151,10 +193,21 @@ public abstract class Personagem
     }
 }
 
+public abstract class Item
+{
+    public string Nome { get; set; } = string.Empty;
+}
+
+public class Pocao : Item
+{
+    public int QuantidadeCura { get; set; }
+}
+
 public class Heroi : Personagem
 {
     public int Experiencia { get; set; } = 0;
     public int Nivel { get; set; } = 1;
+    public List<Item> Inventario { get; set; } = new List<Item>();
 
     public int ExperienciaProximoNivel => (int)(100 * Math.Pow(1.5, Nivel - 1));
 
@@ -193,7 +246,8 @@ enum AcaoCombate
 {
     Atacar,
     Defender,
-    Fugir
+    Fugir,
+    UsarItem
 }
 
 enum ResultadoCombate
