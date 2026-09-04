@@ -10,6 +10,7 @@ var heroi = new Heroi
     PontosDeVida = 100,
     Ataque = 15,
     Defesa = 5,
+    PontosDeVidaMaximo = 100,
     Inventario = new List<Item> { new Pocao { Nome = "Poção Pequena", QuantidadeCura = 30} }
 };
 
@@ -232,6 +233,7 @@ public class Heroi : Personagem
         Ataque += 3;
         Defesa += 1;
         PontosDeVida += 20;
+        PontosDeVidaMaximo += 20;
 
         Console.WriteLine($"{Nome} subiu para o nível {Nivel}!");
     }
