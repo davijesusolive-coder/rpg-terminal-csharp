@@ -21,15 +21,16 @@ Este projeto foi desenvolvido como parte de um plano de estudos de C# e .NET, co
 
 O jogo simula uma jornada de combates por turnos entre um Herói e uma sequência de Inimigos:
 
-1. A cada turno, o jogador escolhe uma ação: **Atacar**, **Defender**, **Fugir** ou **Usar Item**
+1. A cada turno, o jogador escolhe uma ação: **Atacar**, **Defender**, **Fugir**, **Inventário** ou **Equipamentos**
 2. **Atacar** causa dano aleatório baseado no atributo de Ataque, descontando a Defesa do alvo
 3. **Defender** aumenta temporariamente a Defesa do herói, reduzindo o dano do contra-ataque naquele turno
 4. **Fugir** tem uma chance de 50% de encerrar o combate sem vencedor nem perdedor
-5. **Usar Item** permite consumir uma poção do inventário para recuperar pontos de vida, sem ultrapassar o máximo
-6. Se o inimigo sobreviver ao ataque, ele contra-ataca automaticamente
-7. Ao derrotar um inimigo, o herói ganha experiência (XP) e pode subir de nível, aumentando seus atributos e vida máxima
-8. O herói enfrenta os inimigos da lista **em sequência** — o dano é **cumulativo entre as batalhas** (não há cura automática), exigindo gerenciamento de risco
-9. A jornada termina quando o herói derrota todos os inimigos, é derrotado, ou foge com sucesso
+5. **Inventário** permite consumir uma poção para recuperar pontos de vida, sem ultrapassar o máximo
+6. **Equipamentos** permite consultar, equipar e desequipar uma arma e uma armadura
+7. Se o inimigo sobreviver à ação, ele contra-ataca automaticamente
+8. Ao derrotar um inimigo, o herói ganha experiência (XP) e pode subir de nível, aumentando seus atributos e vida máxima
+9. O herói enfrenta os inimigos da lista **em sequência** — o dano é **cumulativo entre as batalhas** (não há cura automática), exigindo gerenciamento de risco
+10. A jornada termina quando o herói derrota todos os inimigos, é derrotado, ou foge com sucesso
 
 ## Sistema de níveis
 
@@ -41,8 +42,9 @@ O jogo simula uma jornada de combates por turnos entre um Herói e uma sequênci
 ## Sistema de itens
 
 - Itens consumíveis (**Poções**) curam vida, sem ultrapassar `PontosDeVidaMaximo`
-- O inventário guarda itens de forma genérica (`List<Item>`), preparado para novos tipos de item no futuro (equipamentos)
+- O inventário guarda itens de forma genérica (`List<Item>`) e pode conter poções e equipamentos
 - Poções são removidas do inventário após o uso (consumíveis)
+- Equipamentos concedem bônus de Ataque ou Defesa enquanto estão equipados; ao trocar ou desequipar, o bônus é removido e o item volta ao inventário
 
 ## Estrutura das classes
 
@@ -65,10 +67,13 @@ Item (classe abstrata)
 └── Pocao : Item
     └── QuantidadeCura
 
+Equipamento : Item
+    └── Tipo (Arma/Armadura), BonusAtaque, BonusDefesa
+
 Combater(Heroi, Inimigo) -> ResultadoCombate
     └── enum ResultadoCombate { Vitoria, Derrota, Fuga }
 
-enum AcaoCombate { Atacar, Defender, Fugir, UsarItem }
+enum AcaoCombate { Atacar, Defender, Fugir, UsarItem, GerenciarEquipamentos }
 ```
 
 ## Como executar
@@ -84,13 +89,13 @@ dotnet run
 - [x] Curva de XP exponencial
 - [x] Múltiplos inimigos em sequência, com dano acumulado entre batalhas (progressão de risco)
 - [x] Inventário e poções de cura, com limite de vida máxima
+- [x] Equipamentos de arma e armadura, com bônus de atributos, troca e remoção
 - [x] Correção: pontos de vida não ficam mais negativos ao receber dano fatal
 - [x] Correção: mensagem de ganho de XP duplicada removida
 - [x] Correção: mensagem de derrota duplicada removida
 
 ## Roadmap (próximas fases)
 
-- [ ] Equipamentos (armas/armaduras) com efeito permanente nos atributos
 
 ## Tecnologias
 

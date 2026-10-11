@@ -11,7 +11,12 @@ var heroi = new Heroi
     Ataque = 15,
     Defesa = 5,
     PontosDeVidaMaximo = 100,
-    Inventario = new List<Item> { new Pocao { Nome = "Poção Pequena", QuantidadeCura = 30} }
+    Inventario = new List<Item>
+    {
+        new Pocao { Nome = "Poção Pequena", QuantidadeCura = 30 },
+        new Equipamento { Nome = "Espada Simples", Tipo = TipoEquipamento.Arma, BonusAtaque = 3 },
+        new Equipamento { Nome = "Armadura de Couro", Tipo = TipoEquipamento.Armadura, BonusDefesa = 2 }
+    }
 };
 
 List<Inimigo> inimigos = new List<Inimigo>
@@ -59,6 +64,7 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
         Console.WriteLine("2. Defender");
         Console.WriteLine("3. Fugir");
         Console.WriteLine("4. Inventário");
+        Console.WriteLine("5. Equipamentos");
         Console.Write("Escolha uma opção: ");
 
         string? opcaoEscolhida = Console.ReadLine();
@@ -77,6 +83,9 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
                 break;
             case "4":
                 acaoEscolhida = AcaoCombate.UsarItem;
+                break;
+            case "5":
+                acaoEscolhida = AcaoCombate.GerenciarEquipamentos;
                 break;
             default:
                 Console.WriteLine("Opção Inválida!");
@@ -155,6 +164,11 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
             }
         }
 
+        if (acaoEscolhida == AcaoCombate.GerenciarEquipamentos)
+        {
+            GerenciarEquipamentos(heroi);
+        }
+
         if (inimigo.EstaVivo())
         {
             int danoInimigo = random.Next(inimigo.Ataque - 2, inimigo.Ataque + 3);
@@ -174,6 +188,59 @@ ResultadoCombate Combater(Heroi heroi, Inimigo inimigo)
     }
 
     return heroi.EstaVivo() ? ResultadoCombate.Vitoria : ResultadoCombate.Derrota;
+}
+
+void GerenciarEquipamentos(Heroi heroi)
+{
+    Console.WriteLine($"\nAtaque: {heroi.Ataque} | Defesa: {heroi.Defesa}");
+    Console.WriteLine($"Arma equipada: {heroi.ArmaEquipada?.Nome ?? "nenhuma"}");
+    Console.WriteLine($"Armadura equipada: {heroi.ArmaduraEquipada?.Nome ?? "nenhuma"}");
+
+    List<Equipamento> equipamentos = heroi.Inventario.OfType<Equipamento>().ToList();
+    if (equipamentos.Count == 0)
+    {
+        Console.WriteLine("Você não possui equipamentos no inventário.");
+        return;
+    }
+
+    Console.WriteLine("Equipamentos disponíveis:");
+    for (int i = 0; i < equipamentos.Count; i++)
+    {
+        Equipamento equipamento = equipamentos[i];
+        string bonus = equipamento.Tipo == TipoEquipamento.Arma
+            ? $"+{equipamento.BonusAtaque} Ataque"
+            : $"+{equipamento.BonusDefesa} Defesa";
+        Console.WriteLine($"{i + 1}. {equipamento.Nome} ({bonus})");
+    }
+    Console.WriteLine("0. Desequipar arma");
+    Console.WriteLine("-1. Desequipar armadura");
+    Console.Write("Escolha um equipamento ou opção: ");
+
+    if (!int.TryParse(Console.ReadLine(), out int escolha))
+    {
+        Console.WriteLine("Opção inválida!");
+        return;
+    }
+
+    if (escolha == 0)
+    {
+        heroi.Desequipar(TipoEquipamento.Arma);
+    }
+    else if (escolha == -1)
+    {
+        heroi.Desequipar(TipoEquipamento.Armadura);
+    }
+    else if (escolha > 0 && escolha <= equipamentos.Count)
+    {
+        if (heroi.Equipar(equipamentos[escolha - 1]))
+        {
+            Console.WriteLine($"{equipamentos[escolha - 1].Nome} equipado!");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Opção inválida!");
+    }
 }
 
 public abstract class Personagem
@@ -204,13 +271,100 @@ public class Pocao : Item
     public int QuantidadeCura { get; set; }
 }
 
+public enum TipoEquipamento
+{
+    Arma,
+    Armadura
+}
+
+public class Equipamento : Item
+{
+    public TipoEquipamento Tipo { get; set; }
+    public int BonusAtaque { get; set; }
+    public int BonusDefesa { get; set; }
+}
+
 public class Heroi : Personagem
 {
     public int Experiencia { get; set; } = 0;
     public int Nivel { get; set; } = 1;
     public List<Item> Inventario { get; set; } = new List<Item>();
+    public Equipamento? ArmaEquipada { get; private set; }
+    public Equipamento? ArmaduraEquipada { get; private set; }
 
     public int ExperienciaProximoNivel => (int)(100 * Math.Pow(1.5, Nivel - 1));
+
+    public bool Equipar(Item item)
+    {
+        if (item is not Equipamento equipamento || !Inventario.Contains(item))
+        {
+            Console.WriteLine("Esse item não pode ser equipado.");
+            return false;
+        }
+
+        Equipamento? equipamentoAnterior = equipamento.Tipo switch
+        {
+            TipoEquipamento.Arma => ArmaEquipada,
+            TipoEquipamento.Armadura => ArmaduraEquipada,
+            _ => null
+        };
+
+        if (equipamentoAnterior == equipamento)
+        {
+            Console.WriteLine("Esse equipamento já está equipado.");
+            return false;
+        }
+
+        if (equipamentoAnterior != null)
+        {
+            AplicarBonus(equipamentoAnterior, -1);
+            Inventario.Add(equipamentoAnterior);
+        }
+
+        Inventario.Remove(item);
+        AplicarBonus(equipamento, 1);
+
+        if (equipamento.Tipo == TipoEquipamento.Arma)
+        {
+            ArmaEquipada = equipamento;
+        }
+        else
+        {
+            ArmaduraEquipada = equipamento;
+        }
+
+        return true;
+    }
+
+    public bool Desequipar(TipoEquipamento tipo)
+    {
+        Equipamento? equipamento = tipo == TipoEquipamento.Arma ? ArmaEquipada : ArmaduraEquipada;
+        if (equipamento == null)
+        {
+            Console.WriteLine("Não há equipamento desse tipo para desequipar.");
+            return false;
+        }
+
+        AplicarBonus(equipamento, -1);
+        Inventario.Add(equipamento);
+        if (tipo == TipoEquipamento.Arma)
+        {
+            ArmaEquipada = null;
+        }
+        else
+        {
+            ArmaduraEquipada = null;
+        }
+
+        Console.WriteLine($"{equipamento.Nome} foi desequipado.");
+        return true;
+    }
+
+    private void AplicarBonus(Equipamento equipamento, int fator)
+    {
+        Ataque += equipamento.BonusAtaque * fator;
+        Defesa += equipamento.BonusDefesa * fator;
+    }
 
     public void GanharExperiencia(int xp)
     {
@@ -249,7 +403,8 @@ enum AcaoCombate
     Atacar,
     Defender,
     Fugir,
-    UsarItem
+    UsarItem,
+    GerenciarEquipamentos
 }
 
 enum ResultadoCombate
